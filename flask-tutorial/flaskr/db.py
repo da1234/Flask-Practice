@@ -8,16 +8,17 @@ Created on Thu Mar 14 21:08:20 2019
 
 import sqlite3
 
-import click
-from flask import current_app, g #g is a special object
+import click #Allows functions to be executed as command-line args.
 from flask.cli import with_appcontext
+
+from flask import current_app, g #g is a special object
+
 
 
 #Registering functions marked with ***  with the Application
 def init_app(app):
     app.teardown_appcontext(close_db)
     app.cli.add_command(init_db_command)
-
 
 
 
@@ -34,14 +35,14 @@ def init_db():
         
 #Calls the above function (init_db)
 @click.command('init-db') # defines a command line command called init-db that calls the init_db
-@with_appcontext
+@with_appcontext #required because: flask init-db - not just init-db (provides flask context in terminal)
 def init_db_command(): #*** - Must be registered with application instance in order to be used.
     """Clear the existing data and create new tables."""
     init_db()
-    click.echo('Initialized the database.')
+    click.echo('Initialized the database.') #Terminal will output message.
 
 
-#we store the connection to the database in one of g's attributes, (allows for reuse)
+#we connect & store the connection to the database in one of g's attributes, (allows for reuse)
 def get_db():
     if('db' not in g):
         g.db = sqlite3.connect( #Returns a Connection object: See (16.6.2.4): https://docs.python.org/2/library/multiprocessing.html#Connection

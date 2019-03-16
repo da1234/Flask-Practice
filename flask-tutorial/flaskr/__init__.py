@@ -15,7 +15,7 @@ message = "This is a practice python script to configure a flask application ins
 instance'''
 def create_app(test_config=None):
     #create and configure app
-    app = Flask(__name__, instance_relative_config=True)
+    app = Flask(__name__, instance_relative_config=True) #File paths will be relative to the flaskr directory
     app.config.from_mapping(
                             SECRET_KEY='dev',
                             DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
@@ -39,6 +39,11 @@ def create_app(test_config=None):
     def hello():
         return message
     
-    from . import db
-    db.init_app(app)
+    from . import db #from this directory import db.py
+    db.init_app(app) #this method registers the closing of db and initialization with the flask application.
+    
+    from . import auth
+    app.register_blueprint(auth.bp)
+    
+    
     return app
