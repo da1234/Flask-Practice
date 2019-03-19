@@ -73,30 +73,29 @@ def register():
 #Second view - login
 @bp.route('/login', methods=('GET', 'POST'))
 def login():
-    if(requests.method == 'POST'): #Begin validation
+    if(request.method == 'POST'): #Begin validation
         username = request.form['username']
         password = request.form['password']
         db = get_db()
         error = None
         user = db.execute(
-                'SELECT * FROM user WHERE username = ?',
-                (username, )
+                'SELECT * FROM user WHERE username = ?', (username,)
         ).fetchone()
     
-    if(user is None): #if db/sql(ite) query doesn't return any record for user, does not exist.
-        error = "Incorrect username"
-    elif(not check_password_hash(user['password'], password)): #checks hashed password in db, against password in form
-        error = "Incorrect password"
-    #end validation
+        if(user is None): #if db/sql(ite) query doesn't return any record for user, does not exist.
+            error = "Incorrect username"
+        elif(not check_password_hash(user['password'], password)): #checks hashed password in db, against password in form
+            error = "Incorrect password"
+        #end validation
     
     
-    if(error is None):
-        session.clear()
-        session['user_id'] = user['id'] #session (imported) is also a dict, mapping session user_id key
-        #to user's id (from db record).
-        return redirect(url_for('index'))
-    
-    flash(error)
+        if(error is None):
+            session.clear()
+            session['user_id'] = user['id'] #session (imported) is also a dict, mapping session user_id key
+            #to user's id (from db record).
+            return redirect(url_for('index'))
+        
+        flash(error)
     return render_template('auth/login.html') #renders html template
     
    
