@@ -34,16 +34,17 @@ def create_app(test_config=None):
     except OSError:
         pass
     
-    #A simple page that says hello
-    @app.route('/')
-    def hello():
-        return message
+
     
     from . import db #from this directory import db.py
     db.init_app(app) #this method registers the closing of db and initialization with the flask application.
     
     from . import auth
     app.register_blueprint(auth.bp)
+    
+    from .import blog
+    app.register_blueprint(blog.bp)
+    app.add_url_rule('/', endpoint='index') # app.add_url_rule() associates the endpoint name 'index' with the / url so that url_for('index') or url_for('blog.index') will both work, generating the same / URL either way.
     
     
     return app
