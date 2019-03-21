@@ -35,7 +35,7 @@ def init_db():
         
 #Calls the above function (init_db)
 @click.command('init-db') # defines a command line command called init-db that calls the init_db
-@with_appcontext #required because: flask init-db - not just init-db (provides flask context in terminal)
+@with_appcontext #required because: [flask init-db] - not just init-db (provides flask context in terminal)
 def init_db_command(): #*** - Must be registered with application instance in order to be used.
     """Clear the existing data and create new tables."""
     init_db()

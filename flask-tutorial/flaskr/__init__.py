@@ -34,7 +34,6 @@ def create_app(test_config=None):
     except OSError:
         pass
     
-
     
     from . import db #from this directory import db.py
     db.init_app(app) #this method registers the closing of db and initialization with the flask application.
