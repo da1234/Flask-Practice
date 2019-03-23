@@ -1,5 +1,6 @@
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, url_for
+    Blueprint, flash, g, redirect, render_template, request, url_for,
+    request
 )
 from werkzeug.exceptions import abort
 
@@ -96,3 +97,36 @@ def delete(id):
     db.execute('DELETE FROM post WHERE id = ?', (id,))
     db.commit()
     return redirect(url_for('blog.index'))
+
+
+# view to show single blog post
+@bp.route('/<int:id>/view', methods=('GET',))
+@login_required
+def view_post(id):
+    db = get_db()
+    post = db.execute(
+    'SELECT p.id, p.title, p.body, p.created, p.author_id, p.likes, p.dislikes, u.username'
+    ' FROM post p JOIN user u ON p.author_id = u.id'
+    ' WHERE p.id=?'
+    ' ORDER BY created DESC',
+    (id,)).fetchone()
+    return render_template('blog/view.html',post=post)
+
+
+# background process to update likes
+@bp.route('/<int:id>/like', methods=('POST',))
+@login_required
+def like_post(id):
+    db = get_db()
+    if request.form.get('likeButton') != None:
+        db.execute(
+            'UPDATE post SET likes = likes + 1'
+            ' WHERE id = ?', (id,)
+        )
+    if request.form.get('dislikeButton') != None:
+        db.execute(
+            'UPDATE post SET dislikes = dislikes - 1'
+            ' WHERE id = ?', (id,)
+        )
+    db.commit()
+    return redirect(url_for('blog.view_post',id=id))
