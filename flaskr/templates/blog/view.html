@@ -5,6 +5,7 @@
 {% endblock %}
 
 {% block content %}
+<script type="text/javascript" src="{{url_for('static',filename='main.js')}}"></script>
 <article class="post">
   <header>
     <div>
@@ -16,13 +17,11 @@
     {% endif %}
   </header>
   <p class="body">{{ post['body'] }}</p><br/>
-  <form action="/{{post['id']}}/like" method="post">
-      <span>
-        <button name="likeButton" style="width:50px" type="submit" class="body" value="like">like</button>
-        {{post['likes']}}
-        <button name="dislikeButton" style="width:50px" type="submit" class="body" value="dislike">dislike</button>
-        {{post['dislikes']}}
-      </span>
-  </form>
+    {% if not liked %}
+        <button id="likebutton" data-post-id="{{post['id']}}" name="likeButton" style="width:50px" class="body" value="like">like</button>
+      {% else %}
+        <button id="likebutton" data-post-id="{{post['id']}}" name="likeButton" style="width:50px" class="body" value="unlike">unlike</button>
+    {% endif %}
+    <p id="count">{{post['likes']}}</p>
 </article>
 {% endblock %}

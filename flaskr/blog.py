@@ -100,33 +100,50 @@ def delete(id):
 
 
 # view to show single blog post
-@bp.route('/<int:id>/view', methods=('GET',))
+@bp.route('/<int:id>/view', methods=('GET','POST'))
 @login_required
 def view_post(id):
     db = get_db()
-    post = db.execute(
-    'SELECT p.id, p.title, p.body, p.created, p.author_id, p.likes, p.dislikes, u.username'
-    ' FROM post p JOIN user u ON p.author_id = u.id'
-    ' WHERE p.id=?'
-    ' ORDER BY created DESC',
-    (id,)).fetchone()
-    return render_template('blog/view.html',post=post)
-
-
-# background process to update likes
-@bp.route('/<int:id>/like', methods=('POST',))
-@login_required
-def like_post(id):
-    db = get_db()
-    if request.form.get('likeButton') != None:
-        db.execute(
-            'UPDATE post SET likes = likes + 1'
-            ' WHERE id = ?', (id,)
-        )
-    if request.form.get('dislikeButton') != None:
-        db.execute(
-            'UPDATE post SET dislikes = dislikes - 1'
-            ' WHERE id = ?', (id,)
-        )
-    db.commit()
-    return redirect(url_for('blog.view_post',id=id))
+    if request.method == 'GET':
+        post = db.execute(
+        'SELECT p.id, p.title, p.body, p.created, p.author_id, p.likes, u.username'
+        ' FROM post p JOIN user u ON p.author_id = u.id'
+        ' WHERE p.id=?'
+        ' ORDER BY created DESC',
+        (id,)).fetchone()
+        if db.execute(
+        'SELECT user_id, post_id'
+        ' FROM userPostReaction'
+        ' WHERE user_id=? AND post_id = ?',
+        (g.user['id'],id,)).fetchone() == None:
+            return render_template('blog/view.html',post=post,liked=False)
+        else:
+            return render_template('blog/view.html',post=post,liked=True)
+    elif request.method == 'POST':
+        postId = request.form.get('id')
+        userId = g.user['id']
+        print(request.form.get('like'))
+        if request.form.get('like') == 'true':
+            print("post liked")
+            db.execute(
+                'INSERT INTO userPostReaction (user_id,post_id)'
+                ' VALUES (?, ?)',
+                (userId, postId,)
+            )
+            db.execute(
+                'UPDATE post SET likes = likes + 1'
+                ' WHERE id = ?', (id,)
+            )
+        else:
+            print("post unliked")
+            db.execute(
+                'DELETE FROM userPostReaction'
+                ' WHERE user_id = ? AND post_id = ?',
+                (userId, postId,)
+            )
+            db.execute(
+                'UPDATE post SET likes = likes - 1'
+                ' WHERE id = ?', (id,)
+            )
+        db.commit()
+        return redirect(url_for('blog.view_post',id=id))        
