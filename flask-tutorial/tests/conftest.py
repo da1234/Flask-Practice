@@ -13,6 +13,10 @@ import pytest
 from flaskr import create_app
 from flaskr.db import get_db, init_db
 
+'''
+Note: pytest uses the functions name to match the name of arguments, i.e. client(app), the app() func
+-tion will be called and it's return value will be uesd within the client fixture.
+'''
 #'rb' mode - read binary
 with open(os.path.join(os.path.dir_name(__file__), 'data.sql'), 'rb') as f:
     _data_sql = f.read().decode('utf8')
@@ -44,3 +48,25 @@ def client(app): #client will make requests to the application w/out running the
 @pytest.fixture
 def runner(app): #creates a runner that can call the Click commands registered with the application
     return app.test_cli_runner()
+
+'''Users need to be logged in for most views, this class helps by allowing the client to make a 
+POST request to the login view.  
+'''
+class AuthActions(object):
+        
+    def __init__(self, client):
+        self._client = client
+        
+    def login(self, username='test', password='test'):
+        return self._client.post(
+                '/auth/login',
+                data={'username' : username, 'password' : password}
+                )
+        
+    def logout(self):
+        return self._client.get('auth/logout')
+    
+@pytest.fixture
+def auth(client):
+    return AuthActions(client)
+

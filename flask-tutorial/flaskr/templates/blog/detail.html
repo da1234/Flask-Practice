@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}{{ post['title'] }}{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+<article class="post">
+    <p>{{ post['body'] }} </p>
+</article>
+<form method="post">
+    <span>
+        <input style="width:50px" type="submit" value="Like">
+        <text>{{ post['likes'] }}</text>
+    </span>
+</form>
+
+{% endblock %}

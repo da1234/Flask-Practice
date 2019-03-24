@@ -56,7 +56,7 @@ def create():
 
 def get_post(id, check_author=True):
     post = get_db().execute(
-            'SELECT p.id, title, body, created, author_id, username'
+            'SELECT p.id, title, body, created, author_id, username, p.likes'
             ' FROM post p JOIN user u ON p.author_id = u.id'
             ' WHERE p.id = ?',
             (id, )
@@ -108,3 +108,26 @@ def delete(id):
     db.execute('DELETE FROM post WHERE id = ?', (id,))
     db.commit()
     return redirect(url_for('blog.index'))
+
+
+@bp.route('/detail/<int:id>', methods=('GET',))
+@login_required
+def detail(id):
+    post = get_post(id)
+    return render_template('blog/detail.html', post=post)
+
+@bp.route('/detail/<int:id>', methods=('POST',))
+@login_required
+def like_post(id):
+    post = get_post(id)
+    current_no_of_likes = post['likes']
+    if(request.method=='POST'):
+        db=get_db()
+        db.execute('UPDATE post '
+                   'SET likes = ? '
+                   'WHERE id = ?'
+                   , (current_no_of_likes+1, id)
+                   )
+        db.commit()
+    
+    return redirect(url_for('blog.detail', id=id))
